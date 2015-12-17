@@ -1,35 +1,41 @@
-require 'json'
-require 'uri'
-require_relative 'nginx_config_util'
+require_relative 'domain_config'
 
 class NginxConfig
-  def initialize(json_file)
-    json = {}
-    json = JSON.parse(File.read(json_file)) if File.exist?(json_file)
-    json["worker_connections"] ||= ENV["WORKER_CONNECTIONS"] || 512
-    json["port"] ||= ENV["PORT"] || 5000
-    json["root"] ||= "public_html/"
-    json["encoding"] ||= "UTF-8"
-    json["proxies"] ||= {}
-    json["proxies"].each do |loc, hash|
-      if hash["origin"][-1] != "/"
-        json["proxies"][loc].merge!("origin" => hash["origin"] + "/")
-      end
+  OPTIONS        = %w(worker_connections debug)
+  LISTEN_OPTIONS = " reuseport"
 
-      uri = URI(hash["origin"])
-      json["proxies"][loc]["path"] = uri.path
-      uri.path = ""
-      json["proxies"][loc]["host"] = uri.to_s
+  def initialize(json = {})
+    @domains = []
+
+    if (json.keys - DomainConfig::OPTIONS - OPTIONS).any?
+      listen_options = true
+      json.each do |domain, domain_json|
+        next if OPTIONS.include?(domain)
+        if listen_options
+          domain_json["listen_options"] = LISTEN_OPTIONS
+          listen_options = false
+        end
+        @domains << DomainConfig.new(domain_json, domain)
+      end
+    else
+      json["_"] = json.dup
+      json.delete_if {|key, _| DomainConfig::OPTIONS.include?(key) }
+      json["_"]["listen_options"] = LISTEN_OPTIONS
+      @domains << DomainConfig.new(json["_"])
     end
-    json["clean_urls"] ||= false
-    json["https_only"] ||= false
-    json["routes"] ||= {}
-    json["routes"] = NginxConfigUtil.parse_routes(json["routes"])
-    json["redirects"] ||= {}
-    json["error_page"] ||= nil
+
+    json["worker_connections"] ||= ENV["WORKER_CONNECTIONS"] || 512
     json["debug"] ||= ENV['STATIC_DEBUG']
-    json.each do |key, value|
-      self.class.send(:define_method, key) { value }
+
+    OPTIONS.each do |option|
+      define_singleton_method(option) { json[option] }
+    end
+  end
+
+  def each_domain(&block)
+    return to_enum(:each_domain) if block.nil?
+    @domains.each do |domain|
+      domain.instance_eval(&block)
     end
   end
 
