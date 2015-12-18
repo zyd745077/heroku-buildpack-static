@@ -1,0 +1,8 @@
+{
+  "localhost": {
+    "root": "dist"
+  },
+  "www.foo.com": {
+    "root": "public_html"
+  }
+}

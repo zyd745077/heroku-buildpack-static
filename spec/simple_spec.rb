@@ -509,4 +509,14 @@ STATIC_JSON
       end
     end
   end
+
+  describe "domains" do
+    let(:name) { "domains" }
+
+    it "should serve assets out of user defined root" do
+      response = app.get("/")
+      expect(response.code).to eq("200")
+      expect(response.body.chomp).to eq("Hello from dist/")
+    end
+  end
 end
