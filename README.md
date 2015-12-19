@@ -141,6 +141,61 @@ For example, to enable CORS for all resources, you just need to enable it for al
 }
 ```
 
+#### Domains
+
+This allows per domain configuration. With this you can specify different [Custom Routes](#custom-routes), [Root](#root) or any of the normal [Configuration](#configuration) options.
+
+```json
+{
+  "configs": [
+    {
+      "domains": ["www.limitlesscaverns.com", "limitlesscaverns.herokuapp.com"],
+      "root": "public_html",
+      "headers": {
+        "/*/**": {
+          "Cache-Control": "public, max-age=512000"
+        }
+      }
+    },
+    {
+      "domains": ["docs.limitlesscaverns.com"],
+      "root": "public_html/docs",
+      "headers": {
+        "/*/**": {
+          "Cache-Control": "public, max-age=512000"
+        }
+      }
+    },
+    {
+      "domains": ["admin.limitlesscaverns.com"],
+      "root": "admin",
+      "routes": {
+        "/**": "index.html"
+      },
+      "headers": {
+        "/": {
+          "Cache-Control": "no-store, no-cache"
+        },
+        "/assets/**": {
+          "Cache-Control": "public, max-age=512000"
+        }
+      }
+    },
+    {
+      "domains": ["api.limitlesscaverns.com"],
+      "root": "api",
+      "proxies": {
+        "/api/": {
+          "origin": "https://api-app.herokuapp.com/"
+        }
+      }
+    }
+  ]
+}
+```
+
+In this case, we have a public marketing site that's accessed at both the Heroku URL and the main www page. There's a docs page that can be accessed at http://www.limitlesscaverns.com/docs/ or http://docs.limitlesscaverns.com/. We have a Single Page App that handles administrating the content on the www page at http://admin.limitlesscaverns.com. Finally, there's a proxy endpoint for our api at http://api.limitlesscaverns.com.
+
 ##### Precedence
 When there are header conflicts, the last header definition always wins. The headers do not get appended. For example,
 
