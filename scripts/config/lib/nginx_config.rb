@@ -7,21 +7,19 @@ class NginxConfig
   def initialize(json = {})
     @domains = []
 
-    if (json.keys - DomainConfig::OPTIONS - OPTIONS).any?
+    if json["configs"]
       listen_options = true
-      json.each do |domain, domain_json|
-        next if OPTIONS.include?(domain)
+
+      json["configs"].each do |config|
         if listen_options
-          domain_json["listen_options"] = LISTEN_OPTIONS
+          config["listen_options"] = LISTEN_OPTIONS
           listen_options = false
         end
-        @domains << DomainConfig.new(domain_json, domain)
+        @domains << DomainConfig.new(config)
       end
     else
-      json["_"] = json.dup
-      json.delete_if {|key, _| DomainConfig::OPTIONS.include?(key) }
-      json["_"]["listen_options"] = LISTEN_OPTIONS
-      @domains << DomainConfig.new(json["_"])
+      json["domains"] = ["_"]
+      @domains << DomainConfig.new(json)
     end
 
     json["worker_connections"] ||= ENV["WORKER_CONNECTIONS"] || 512

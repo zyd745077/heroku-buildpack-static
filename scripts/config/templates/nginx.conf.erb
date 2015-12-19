@@ -39,7 +39,7 @@ http {
     port_in_redirect off;
     keepalive_timeout 5;
     root <%= root %>;
-    server_name <%= domain %>;
+    server_name <%= domains.join(" ") %>;
   <% if error_page %>
     error_page 404 500 /<%= error_page %>;
   <% end %>

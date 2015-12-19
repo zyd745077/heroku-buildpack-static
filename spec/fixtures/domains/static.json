@@ -1,8 +1,13 @@
 {
-  "localhost": {
-    "root": "dist"
-  },
-  "www.foo.com": {
-    "root": "public_html"
-  }
+  "worker_connections": 512,
+  "configs": [
+    {
+      "domains": ["localhost"],
+      "root": "dist"
+    },
+    {
+      "domains": ["www.foo.com", "bar.foo.com"],
+      "root": "public_html"
+    }
+  ]
 }

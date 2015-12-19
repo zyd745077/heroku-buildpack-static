@@ -2,13 +2,21 @@ require 'uri'
 require_relative 'nginx_config_util'
 
 class DomainConfig
-  OPTIONS = %w(port root encoding proxies clean_urls https_only routes redirects error_page headers)
+  OPTIONS = %w(
+    clean_urls
+    domains
+    encoding
+    error_page
+    headers
+    https_only
+    port
+    proxies
+    redirects
+    root
+    routes
+  )
 
-  attr_reader :domain
-
-  def initialize(json = {}, domain = "_")
-    @domain = domain
-
+  def initialize(json = {})
     json["port"] ||= ENV["PORT"] || "5000"
     json["root"] ||= "public_html/"
     json["encoding"] ||= "UTF-8"
@@ -29,6 +37,7 @@ class DomainConfig
     json["routes"] = NginxConfigUtil.parse_routes(json["routes"])
     json["redirects"] ||= {}
     json["error_page"] ||= nil
+    json["domains"] ||= ["_"]
 
     (OPTIONS + ["listen_options"]).each do |option|
       define_singleton_method(option) { json[option] }
