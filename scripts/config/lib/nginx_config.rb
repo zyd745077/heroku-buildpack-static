@@ -27,7 +27,7 @@ class NginxConfig
       uri = URI(hash["origin"])
       json["proxies"][loc]["path"] = uri.path
       uri.path = ""
-      json["proxies"][loc]["host"] = uri.to_s
+      json["proxies"][loc]["host"] = uri.to_s.chomp
     end
     json["clean_urls"] ||= DEFAULT[:clean_urls]
     json["https_only"] ||= DEFAULT[:https_only]
