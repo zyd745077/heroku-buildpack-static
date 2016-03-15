@@ -79,6 +79,14 @@ http {
 
   <% proxies.each do |location, hash| %>
     location <%= location %> {
+      rewrite <%= location %>(.*)$ / break;
+      proxy_pass <%= hash['origin'] %>;
+    }
+  <% end %>
+
+  <% proxies.each do |location, hash| %>
+    location <%= location %>/ {
+      rewrite <%= location %>(.*)$ / break;
       proxy_pass <%= hash['origin'] %>;
     }
   <% end %>
