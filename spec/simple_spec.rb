@@ -1,4 +1,5 @@
 require "fileutils"
+require "digest"
 require_relative "spec_helper"
 require_relative "support/app_runner"
 require_relative "support/buildpack_builder"
@@ -546,6 +547,69 @@ STATIC_JSON
           expect(app.get(response["location"]).body.chomp).to eq("goodbye")
 
           response = app.get("/foo")
+          expect(response.code).to eq("404")
+        end
+      end
+    end
+  end
+
+  describe "ACME Challenge" do
+    let(:name) { "custom_headers_routes" }
+
+    context "single domain" do
+      let(:acme_key)   { 't0H24ePKj6mSg7Yq25-hN9LX2OQIiiR6nCSEEdUjc50.Xzfp6ZrBNho0ZZcqD1sm3CPgkOdCFju0IKdCIji36nM' }
+      let(:acme_token) { 't0H24ePKj6mSg7Yq25-hN9LX2OQIiiR6nCSEEdUjc50' }
+      let(:env) do
+        {
+          'ACME_KEY' => acme_key,
+          'ACME_TOKEN' => acme_token
+        }
+      end
+
+      it "should return the right challenge response" do
+        app.run do
+          response = app.get("/.well-known/acme-challenge/#{acme_token}")
+          expect(response.code).to eq("200")
+          expect(response.content_type).to eq("text/plain")
+          expect(response.body.chomp).to eq(acme_key)
+
+          response = app.get("/.well-known/acme-challenge/foo")
+          expect(response.code).to eq("404")
+        end
+      end
+    end
+
+    context "multiple domains" do
+      let(:acme_challenges) do
+        (0..3).map do |index|
+          [Digest::MD5.base64digest("key_#{index}"), Digest::MD5.base64digest("token_#{index}")]
+        end
+      end
+      let(:acme_token_20) { Digest::MD5.hexdigest("token_20") }
+      let(:env) do
+        hash = Hash.new
+        acme_challenges.each_with_index do |(key, token), index|
+          hash["ACME_KEY_#{index}"]   = key
+          hash["ACME_TOKEN_#{index}"] = token
+        end
+        hash["ACME_KEY_20"] = acme_token_20
+
+        hash
+      end
+
+      it "should return the right challenge response" do
+        app.run do
+          acme_challenges.each do |acme_key, acme_token|
+            response = app.get("/.well-known/acme-challenge/#{acme_token}")
+            expect(response.code).to eq("200")
+            expect(response.content_type).to eq("text/plain")
+            expect(response.body.chomp).to eq(acme_key)
+          end
+
+          response = app.get("/.well-known/acme-challenge/#{acme_token_20}")
+          expect(response.code).to eq("404")
+
+          response = app.get("/.well-known/acme-challenge/foo")
           expect(response.code).to eq("404")
         end
       end

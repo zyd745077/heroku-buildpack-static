@@ -103,5 +103,14 @@ http {
     }
   <% end %>
 
+  # ACME Challenge
+  <% ENV.select {|key, value| key.match(/^ACME_TOKEN/) }.each do |key, acme_token| %>
+    <% if acme_key = ENV[key.sub("TOKEN", "KEY")] %>
+    location = /.well-known/acme-challenge/<%= acme_token %> {
+      default_type text/plain;
+      return 200 '<%= acme_key %>';
+    }
+    <% end %>
+  <% end %>
   }
 }
