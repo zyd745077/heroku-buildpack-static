@@ -9,7 +9,7 @@ env_dir=$3
 bp_dir=$(dirname $(dirname $0))
 
 fetch_nginx_tarball() {
-    local nginx_version="1.9.7"
+    local nginx_version="1.10.1"
     local ngx_mruby_version="1.18.2"
     local tarball_file="nginx-$nginx_version-ngx_mruby-$ngx_mruby_version.tgz"
     local stack="cedar-14"
