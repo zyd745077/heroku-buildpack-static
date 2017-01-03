@@ -8,6 +8,9 @@ events {
 }
 
 http {
+  <% if proxies.length > 0 %>
+    resolver 8.8.4.4 208.67.222.222 127.0.0.1;
+  <% end %>
   gzip on;
   gzip_comp_level 6;
   gzip_min_length 512;
@@ -78,8 +81,14 @@ http {
   <% end %>
 
   <% proxies.each do |location, hash| %>
+    <% require 'digest' %>
+    <% backend_name = Digest::MD5.new.update(location) %>
+    <% origin = hash['origin'] %>
+    <% scheme = URI(origin).scheme %>
+    <% domain = URI(origin).host %>
+    set $<%= backend_name %> "<%= "#{scheme}://#{domain}" %>";
     location <%= location %> {
-      proxy_pass <%= hash['origin'] %>;
+      proxy_pass $<%= backend_name %>;
       proxy_ssl_server_name on;
     }
   <% end %>
