@@ -3,6 +3,8 @@ FROM heroku/cedar:14
 RUN useradd -d /app -m app
 USER app
 
+ENV STACK cedar-14
+
 WORKDIR /buildpack
 COPY bin/ /buildpack/bin/
 COPY scripts/ /buildpack/scripts/
