@@ -601,5 +601,16 @@ STATIC_JSON
         end
       end
     end
+
+    context "with pagespeed support" do
+      let(:name) { "pagespeed" }
+
+      it "enables pagespeed" do
+        response = app.get("/")
+        expect(response.code).to eq("200")
+        expect(response["X-Page-Speed"]).to eq("1.11.33.4-0")
+        expect(response["Cache-Control"]).to eq("max-age=0, no-cache")
+      end
+    end
   end
 end

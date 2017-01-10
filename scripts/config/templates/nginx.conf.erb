@@ -1,5 +1,8 @@
 daemon off;
 worker_processes auto;
+<% if pagespeed.any? %>
+load_module /app/bin/modules/ngx_pagespeed.so;
+<% end %>
 
 events {
   use epoll;
@@ -34,6 +37,15 @@ http {
 
   #Must read the body in 5 seconds.
   client_body_timeout 5;
+
+  # pagespeed configuration
+<% if pagespeed.any? %>
+  pagespeed on;
+  pagespeed FileCachePath "/tmp/cache/ngx_pagespeed";
+  <% pagespeed.each do |key, value| %>
+  pagespeed <%= key %> <%= value %>;
+  <% end %>
+<% end %>
 
   server {
     listen <%= port %> reuseport;

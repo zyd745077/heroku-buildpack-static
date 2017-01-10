@@ -8,18 +8,33 @@ cache_dir=$2
 env_dir=$3
 bp_dir=$(dirname $(dirname $0))
 
-fetch_nginx_tarball() {
-    local version="1.9.7"
-    local tarball_file="nginx-$version.tgz"
-    local stack="cedar-14"
-    local nginx_tarball_url="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/nginx/$stack/nginx-$version-ngx_mruby.tgz"
-    local dest_path="$cache_dir/$stack/$tarball_file"
+fetch_tarball() {
+    local url=$1
+    local dest_path=$2
 
     if [ -f "$dest_path" ]; then
         echo -n "cat $dest_path"
     else
-        echo -n "curl -L $nginx_tarball_url"
+        echo -n "curl -L $url"
     fi
+}
+
+fetch_nginx_tarball() {
+    local version="1.10.1"
+    local tarball_file="nginx-$version.tgz"
+    local url="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/nginx/$STACK/nginx-$version-ngx_mruby.tgz"
+    local dest_path="$cache_dir/$STACK/$tarball_file"
+
+    echo -n "$(fetch_tarball $url $dest_path)"
+}
+
+fetch_ngx_pagespeed_tarball() {
+    local version="1.11.33.4"
+    local tarball_file="ngx_pagespeed-$version.tgz"
+    local url="https://s3-external-1.amazonaws.com/heroku-buildpack-ruby/nginx/$STACK/$tarball_file"
+    local dest_path="$cache_dir/$STACK/$tarball_file"
+
+    echo -n "$(fetch_tarball $url $dest_path)"
 }
 
 mkdir -p $build_dir/bin
@@ -28,6 +43,8 @@ nginx_version=$($build_dir/bin/nginx-$STACK -V 2>&1 | head -1 | awk '{ print $NF
 cp -a $bp_dir/scripts/boot $build_dir/bin/boot
 cp -a $bp_dir/scripts/config $build_dir/bin/config
 cp -a $build_dir/bin/nginx $build_dir/bin/nginx-static-buildpack
+$(fetch_ngx_pagespeed_tarball) | tar xzC $build_dir/bin
+mkdir -p /tmp/cache/ngx_pagespeed
 echo "-----> Installed ${nginx_version} to /app/bin"
 
 mkdir -p $build_dir/config
