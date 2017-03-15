@@ -81,6 +81,7 @@ http {
     location <%= location %> {
       proxy_pass <%= hash['origin'] %>;
       proxy_ssl_server_name on;
+      proxy_redirect default;
     }
   <% end %>
 
@@ -95,6 +96,7 @@ http {
       rewrite ^<%= location %>(.*)$ <%= hash['path'] %>/$1 break;
       proxy_pass <%= hash['host'] %>;
       proxy_ssl_server_name on;
+      proxy_redirect default;
     }
   <% end %>
 
