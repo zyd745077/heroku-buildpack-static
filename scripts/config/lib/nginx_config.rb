@@ -29,6 +29,7 @@ class NginxConfig
       json["proxies"][loc]["path"] = uri.path
       uri.path = ""
       json["proxies"][loc]["host"] = uri.to_s
+      json["proxies"][loc]["uri"] = uri
     end
 
     json["clean_urls"] ||= DEFAULT[:clean_urls]

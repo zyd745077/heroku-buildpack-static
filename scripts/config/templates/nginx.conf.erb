@@ -82,6 +82,10 @@ http {
       proxy_pass <%= hash['origin'] %>;
       proxy_ssl_server_name on;
       proxy_redirect default;
+      <% if hash['uri'].scheme == 'https' %>
+        <% uri = hash['uri'].dup.tap {|uri| uri.scheme = "http" }.to_s %>
+      proxy_redirect <%= uri.end_with?("/") ? uri : uri + "/" %>  <%= location %>;
+      <% end %>
     }
   <% end %>
 
@@ -97,6 +101,10 @@ http {
       proxy_pass <%= hash['host'] %>;
       proxy_ssl_server_name on;
       proxy_redirect default;
+      <% if hash['uri'].scheme == 'https' %>
+        <% uri = hash['uri'].dup.tap {|uri| uri.scheme = "http" }.to_s %>
+      proxy_redirect <%= uri.end_with?("/") ? uri : uri + "/" %>  <%= location %>;
+      <% end %>
     }
   <% end %>
 
