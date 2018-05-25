@@ -2,6 +2,6 @@ machine:
   services:
     - docker
   ruby:
-    version: ruby-2.2.3
+    version: ruby-2.5.1
   environment:
     circleci: true

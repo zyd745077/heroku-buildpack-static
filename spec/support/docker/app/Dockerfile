@@ -1,4 +1,4 @@
-FROM heroku/cedar:14
+FROM heroku/heroku:16
 
 RUN useradd -d /app -m app
 USER app
